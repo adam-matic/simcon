@@ -46,18 +46,22 @@ class Time(Block):
     def step(self): self.next_state = self.state + self.dt
     
 class Amplifier(Block):
-    def __init__(self, init_value=0, K=50, tc=0.51, ins=[], dt=0.001):
+    def __init__(self, init_value=0, K=50, tc=0.51, ins=[], limits = None, dt=0.001):
         super().__init__(init_value=init_value, ins=ins)
         self.dt = dt
         self.K = K
         self.tc = tc
+        self.limits = limits
+
     def step(self):
         i = self.ins[0].state
-        K = self.K
-        S = self.dt / self.tc
         s = self.state
-        self.next_state = s + (K * i - s) * S              
-
+        self.next_state = s + (self.K * i - s) * (self.dt / self.tc)             
+        
+        if self.limits is not None:
+            if self.next_state < self.limits[0]: self.next_state = self.limits[0]
+            if self.next_state > self.limits[1]: self.next_state = self.limits[1]
+            
 class Comparator(Block):        
     def step(self):
         a = self.ins[0].state
@@ -195,7 +199,9 @@ class AnalogComputer():
             if btype in ["generator", "const", 'func']: params.pop("ins", None)
             #print(params)
             bk = block_classes[btype](**params)
+            bk.output_label = name
             self.blocks[name] = bk
+            
             
         for b, v in self.blocks.items():
             v.ins = [self.blocks[n] for n in v.ins]

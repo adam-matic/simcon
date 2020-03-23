@@ -43,6 +43,8 @@ def parse_program_string( program_string ):
         b["ins"] = [ items[3] ]
         b["K"]   = float(items[4])
         b["tc"]  = float(items[5])
+        if len(items) == 8:
+            b["limits"] = [float(items[6]), float(items[7])]
 
     def mmult(b, items):  b["ins"] = items[2:]
     def mdiv(b, items):   b["ins"] = items[2:]
